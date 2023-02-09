@@ -7,10 +7,13 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/sixsat/market-report/config"
 )
 
 func main() {
-	dg, err := discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
+	cfg := config.New()
+
+	dg, err := discordgo.New(cfg.Discord.BotToken)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,6 +44,9 @@ func messageHandler(ds *discordgo.Session, dm *discordgo.MessageCreate) {
 	switch dm.Content {
 	case "!bot":
 		log.Println("Channel ID:", dm.ChannelID)
-		ds.ChannelMessageSend(dm.ChannelID, "Hello!")
+		_, err := ds.ChannelMessageSend(dm.ChannelID, "Hello!")
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
