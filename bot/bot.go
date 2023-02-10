@@ -2,44 +2,38 @@ package bot
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sixsat/market-report/config"
 )
 
-// Start creates a new Discord session, setups an event handler, and opens a
-// websocket connection to Discord. Use Session.Close() to close the connection.
-func Start() (*discordgo.Session, error) {
-	cfg := config.New()
+var session *discordgo.Session
 
-	session, err := discordgo.New(cfg.Discord.BotToken)
+// Start creates a new Discord session, setups an event handler, and opens a
+// websocket connection to Discord.
+func Start() error {
+	var err error
+	session, err = discordgo.New("Bot " + config.Getenv("BOT_TOKEN"))
 	if err != nil {
-		return nil, fmt.Errorf("creating discord session: %w", err)
+		return fmt.Errorf("creating discord session: %w", err)
 	}
 
 	session.AddHandler(messageHandler)
 
 	err = session.Open()
 	if err != nil {
-		return nil, fmt.Errorf("opening websocket connection: %w", err)
+		return fmt.Errorf("opening websocket connection: %w", err)
 	}
 
-	return session, nil
+	return nil
 }
 
-func messageHandler(ds *discordgo.Session, dm *discordgo.MessageCreate) {
-	// Ignore bot messages
-	if dm.Author.ID == ds.State.User.ID {
-		return
+// Stop closes a websocket and stops all listening/heartbeat goroutines.
+func Stop() error {
+	err := session.Close()
+	if err != nil {
+		return fmt.Errorf("closing websocket: %w", err)
 	}
 
-	switch dm.Content {
-	case "!bot":
-		log.Println("Channel ID:", dm.ChannelID)
-		_, err := ds.ChannelMessageSend(dm.ChannelID, "Hello!")
-		if err != nil {
-			log.Println(err)
-		}
-	}
+	return nil
 }
