@@ -10,7 +10,7 @@ import (
 func init() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading env file:", err)
 	}
 }
 
@@ -26,8 +26,17 @@ type discord struct {
 func New() *c {
 	return &c{
 		discord{
-			BotToken:  "Bot " + os.Getenv("BOT_TOKEN"),
-			ChannelID: os.Getenv("CHANNEL_ID"),
+			BotToken:  "Bot " + getEnv("BOT_TOKEN"),
+			ChannelID: getEnv("CHANNEL_ID"),
 		},
 	}
+}
+
+func getEnv(key string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		log.Fatalf("env %s is empty", key)
+	}
+
+	return val
 }
