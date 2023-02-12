@@ -14,82 +14,97 @@ const (
 	defaultMarket = "set"
 )
 
-func GetIndex(market string) *Index {
+var rankingTypes = []string{"mostActiveValue", "topGainer", "topLoser"}
+
+func GetSummary(market string) Summary {
+	var rankings []ranking
+	for _, rt := range rankingTypes {
+		rankings = append(rankings, getRanking(market, rt))
+	}
+
+	return Summary{
+		Index:           getIndex(market),
+		InvestorSummary: getInvestorSummary(market),
+		Rankings:        rankings,
+	}
+}
+
+func getIndex(market string) index {
 	resp, err := http.Get(indexURL(market))
 	if err != nil {
 		log.Println(err)
-		return nil
+		return index{}
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil
+		return index{}
 	}
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return index{}
 	}
 
-	var res Index
+	var res index
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return index{}
 	}
 
-	return &res
+	return res
 }
 
-func GetSummary(market string) *Summary {
-	resp, err := http.Get(summaryURL(market))
+func getInvestorSummary(market string) investorSummary {
+	resp, err := http.Get(investorSummaryURL(market))
 	if err != nil {
 		log.Println(err)
-		return nil
+		return investorSummary{}
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil
+		return investorSummary{}
 	}
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return investorSummary{}
 	}
 
-	var res Summary
+	var res investorSummary
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return investorSummary{}
 	}
 
-	return &res
+	return res
 }
 
-func GetRanking(market, rType string) *Ranking {
+func getRanking(market, rType string) ranking {
 	resp, err := http.Get(rankingURL(market, rType))
 	if err != nil {
 		log.Println(err)
-		return nil
+		return ranking{}
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil
+		return ranking{}
 	}
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return ranking{}
 	}
 
-	var res Ranking
+	var res ranking
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		log.Println(err)
-		return nil
+		return ranking{}
 	}
 
-	return &res
+	return res
 }
 
 func indexURL(market string) string {
@@ -99,7 +114,7 @@ func indexURL(market string) string {
 	return fmt.Sprintf("%s/index/%s/info", baseURL, market)
 }
 
-func summaryURL(market string) string {
+func investorSummaryURL(market string) string {
 	if market == "" {
 		market = defaultMarket
 	}

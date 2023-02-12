@@ -1,6 +1,12 @@
 package set
 
-type Index struct {
+type Summary struct {
+	Index           index
+	InvestorSummary investorSummary
+	Rankings        []ranking
+}
+
+type index struct {
 	Symbol         string  `json:"symbol"`
 	NameEN         string  `json:"nameEn"`
 	NameTH         string  `json:"nameTh"`
@@ -10,7 +16,7 @@ type Index struct {
 	Last           float64 `json:"last"`
 	Change         float64 `json:"change"`
 	PercentChange  float64 `json:"percentChange"`
-	Volume         int64   `json:"volume"`
+	Volume         float64 `json:"volume"`
 	Value          float64 `json:"value"`
 	QuerySymbol    string  `json:"querySymbol"`
 	MarketStatus   string  `json:"marketStatus"`
@@ -19,6 +25,15 @@ type Index struct {
 	IndustryName   string  `json:"industryName"`
 	SectorName     string  `json:"sectorName"`
 	Level          string  `json:"level"`
+}
+
+type investorSummary struct {
+	Name       string     `json:"name"`
+	AsOfDate   string     `json:"asOfDate"`
+	BeginDate  string     `json:"beginDate"`
+	EndDate    string     `json:"endDate"`
+	TotalValue float64    `json:"totalValue"`
+	Investors  []investor `json:"investors"`
 }
 
 type investor struct {
@@ -30,13 +45,13 @@ type investor struct {
 	PercentSellValue float64 `json:"percentSellValue"`
 }
 
-type Summary struct {
-	Name       string     `json:"name"`
-	AsOfDate   string     `json:"asOfDate"`
-	BeginDate  string     `json:"beginDate"`
-	EndDate    string     `json:"endDate"`
-	TotalValue float64    `json:"totalValue"`
-	Investors  []investor `json:"investors"`
+type ranking struct {
+	RankingType    string      `json:"rankingType"`
+	Market         string      `json:"market"`
+	SecurityType   string      `json:"securityType"`
+	MarketDateTime string      `json:"marketDateTime"`
+	RankingPeriod  interface{} `json:"rankingPeriod"`
+	Stocks         []stock     `json:"stocks"`
 }
 
 type stock struct {
@@ -53,13 +68,4 @@ type stock struct {
 	AomVolume     float64 `json:"aomVolume"`
 	AomValue      float64 `json:"aomValue"`
 	RankingValue  float64 `json:"rankingValue"`
-}
-
-type Ranking struct {
-	RankingType    string      `json:"rankingType"`
-	Market         string      `json:"market"`
-	SecurityType   string      `json:"securityType"`
-	MarketDateTime string      `json:"marketDateTime"`
-	RankingPeriod  interface{} `json:"rankingPeriod"`
-	Stocks         []stock     `json:"stocks"`
 }
