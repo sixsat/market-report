@@ -39,14 +39,15 @@ func getIndex(market string) index {
 		return index{}
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		log.Println(err)
 		return index{}
 	}
 
 	var res index
-	err = json.Unmarshal(data, &res)
+	err = json.Unmarshal(body, &res)
 	if err != nil {
 		log.Println(err)
 		return index{}
@@ -65,14 +66,15 @@ func getInvestorSummary(market string) investorSummary {
 		return investorSummary{}
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		log.Println(err)
 		return investorSummary{}
 	}
 
 	var res investorSummary
-	err = json.Unmarshal(data, &res)
+	err = json.Unmarshal(body, &res)
 	if err != nil {
 		log.Println(err)
 		return investorSummary{}
@@ -91,14 +93,15 @@ func getRanking(market, rType string) ranking {
 		return ranking{}
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		log.Println(err)
 		return ranking{}
 	}
 
 	var res ranking
-	err = json.Unmarshal(data, &res)
+	err = json.Unmarshal(body, &res)
 	if err != nil {
 		log.Println(err)
 		return ranking{}
