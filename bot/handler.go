@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -22,8 +21,14 @@ func messageHandler(ds *discordgo.Session, dm *discordgo.MessageCreate) {
 			log.Println(err)
 			return
 		}
-	case "!summary":
-		_, err := ds.ChannelMessageSend(dm.ChannelID, summaryMessage(""))
+	case "!set":
+		_, err := ds.ChannelMessageSend(dm.ChannelID, summaryMessage("set"))
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	case "!mai":
+		_, err := ds.ChannelMessageSend(dm.ChannelID, summaryMessage("mai"))
 		if err != nil {
 			log.Println(err)
 			return
@@ -37,55 +42,59 @@ func isBot(ds *discordgo.Session, dm *discordgo.MessageCreate) bool {
 
 func summaryMessage(market string) string {
 	var b strings.Builder
-	res := set.GetSummary(market)
+	res := set.GetPrettySummary(market)
+
+	b.WriteString("```\n")
 
 	// Index
-	fmt.Fprintf(&b,
-		`%s %s %s
-%.2f %.2f (%.2f%%)
-Val. %.2f M Vol. %.2f M
-`,
-		res.Index.NameEN, res.Index.Level, res.Index.MarketStatus,
-		res.Index.Last, res.Index.Change, res.Index.PercentChange,
-		res.Index.Value/1_000_000, res.Index.Volume/1_000_000,
+	b.WriteString(
+		res.Index.NameEN + " Index on " + res.Index.MarketDateTime + " " + res.Index.MarketStatus + "\n" +
+			res.Index.Last + " " + res.Index.Change + " (" + res.Index.PercentChange + "%)\n" +
+			"Val. " + res.Index.Value + " M฿, Vol. " + res.Index.Volume + " M\n\n",
 	)
 
 	// Investor summary
-	fmt.Fprintf(&b,
-		`
-INSTITUTION %.2f M
-PROP %.2f M
-FOREIGN %.2f M
-LOCAL %.2f M
-`,
-		res.InvestorSummary.Investors[0].NetValue/1_000_000,
-		res.InvestorSummary.Investors[1].NetValue/1_000_000,
-		res.InvestorSummary.Investors[2].NetValue/1_000_000,
-		res.InvestorSummary.Investors[3].NetValue/1_000_000,
-	)
+	// TODO: Add YTD net value
+	for i := range res.InvestorSummary.Investors {
+		b.WriteString(
+			res.InvestorSummary.Investors[i].Type + " " + res.InvestorSummary.Investors[i].NetValue + " M฿\n",
+		)
+	}
 
 	// Most active value
 	b.WriteString("\nMost Active Value\n")
 	for i := range res.Rankings[0].Stocks {
-		fmt.Fprintf(&b, "%s %.2f %.2f (%.2f%%)\n",
-			res.Rankings[0].Stocks[i].Symbol, res.Rankings[0].Stocks[i].Last, res.Rankings[0].Stocks[i].Change, res.Rankings[0].Stocks[i].PercentChange)
+		b.WriteString(
+			res.Rankings[0].Stocks[i].Symbol + " " +
+				res.Rankings[0].Stocks[i].Last + " " +
+				res.Rankings[0].Stocks[i].Change + " (" +
+				res.Rankings[0].Stocks[i].PercentChange + "%)\n",
+		)
 	}
 
 	// Top gainer
 	b.WriteString("\nTop Gainer\n")
 	for i := range res.Rankings[1].Stocks {
-		fmt.Fprintf(&b, "%s %.2f %.2f (%.2f%%)\n",
-			res.Rankings[1].Stocks[i].Symbol, res.Rankings[1].Stocks[i].Last, res.Rankings[1].Stocks[i].Change, res.Rankings[1].Stocks[i].PercentChange)
+		b.WriteString(
+			res.Rankings[1].Stocks[i].Symbol + " " +
+				res.Rankings[1].Stocks[i].Last + " " +
+				res.Rankings[1].Stocks[i].Change + " (" +
+				res.Rankings[1].Stocks[i].PercentChange + "%)\n",
+		)
 	}
 
 	// Top loser
 	b.WriteString("\nTop Loser\n")
 	for i := range res.Rankings[2].Stocks {
-		fmt.Fprintf(&b, "%s %.2f %.2f (%.2f%%)\n",
-			res.Rankings[2].Stocks[i].Symbol, res.Rankings[2].Stocks[i].Last, res.Rankings[2].Stocks[i].Change, res.Rankings[2].Stocks[i].PercentChange)
+		b.WriteString(
+			res.Rankings[2].Stocks[i].Symbol + " " +
+				res.Rankings[2].Stocks[i].Last + " " +
+				res.Rankings[2].Stocks[i].Change + " (" +
+				res.Rankings[2].Stocks[i].PercentChange + "%)\n",
+		)
 	}
 
-	b.WriteString("\nSource: Settrade")
+	b.WriteString("\nSource: Settrade\n```")
 
 	return b.String()
 }
