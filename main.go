@@ -15,6 +15,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer bot.Stop()
 
 	log.Println("Bot is now running.")
 
@@ -22,10 +23,5 @@ func main() {
 	signal.Notify(stop, syscall.SIGTERM, os.Interrupt)
 	<-stop
 
-	err = bot.Stop()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("bye~")
+	log.Println("shutting down...")
 }
