@@ -69,3 +69,73 @@ type stock struct {
 	AomValue      float64 `json:"aomValue"`
 	RankingValue  float64 `json:"rankingValue"`
 }
+
+type PrettySummary struct {
+	Index           pIndex
+	InvestorSummary pInvestorSummary
+	Rankings        []pRanking
+}
+
+type pIndex struct {
+	Symbol         string
+	NameEN         string
+	NameTH         string
+	Prior          string
+	High           string
+	Low            string
+	Last           string
+	Change         string
+	PercentChange  string
+	Volume         string
+	Value          string
+	QuerySymbol    string
+	MarketStatus   string
+	MarketDateTime string
+	MarketName     string
+	IndustryName   string
+	SectorName     string
+	Level          string
+}
+
+type pInvestorSummary struct {
+	Name       string
+	AsOfDate   string
+	BeginDate  string
+	EndDate    string
+	TotalValue string
+	Investors  []pInvestor
+}
+
+type pInvestor struct {
+	Type             string
+	BuyValue         string
+	SellValue        string
+	NetValue         string
+	PercentBuyValue  string
+	PercentSellValue string
+}
+
+type pRanking struct {
+	RankingType    string
+	Market         string
+	SecurityType   string
+	MarketDateTime string
+	RankingPeriod  interface{}
+	Stocks         []pStock
+}
+
+type pStock struct {
+	Symbol        string
+	Sign          string
+	Prior         string
+	Last          string
+	Change        string
+	PercentChange string
+	High          string
+	Low           string
+	TotalVolume   string
+	TotalValue    string
+	AomVolume     string
+	AomValue      string
+	RankingValue  string
+}

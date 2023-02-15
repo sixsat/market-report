@@ -6,13 +6,121 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
+	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
 const (
-	baseURL = "https://www.settrade.com/api/set"
-
+	baseURL       = "https://www.settrade.com/api/set"
 	defaultMarket = "set"
+
+	floatLayout = "+#,###.##"
+	timeLayout  = "Jan 2 2006"
 )
+
+func GetPrettySummary(market string) PrettySummary {
+	s := GetSummary(market)
+
+	return PrettySummary{
+		Index:           prettyIndex(s.Index),
+		InvestorSummary: prettyInvestorSummary(s.InvestorSummary),
+		Rankings:        prettyRankings(s.Rankings),
+	}
+}
+
+func prettyIndex(i index) pIndex {
+	dt, err := time.Parse(time.RFC3339, i.MarketDateTime)
+	if err != nil {
+		log.Println(err)
+		return pIndex{}
+	}
+	i.MarketDateTime = dt.Format(timeLayout)
+
+	return pIndex{
+		Symbol:         strings.ToUpper(i.Symbol),
+		NameEN:         strings.ToUpper(i.NameEN),
+		NameTH:         strings.ToUpper(i.NameTH),
+		Prior:          humanize.FormatFloat("", i.Prior),
+		High:           humanize.FormatFloat("", i.High),
+		Low:            humanize.FormatFloat("", i.Low),
+		Last:           humanize.FormatFloat("", i.Last),
+		Change:         humanize.FormatFloat(floatLayout, i.Change),
+		PercentChange:  humanize.FormatFloat(floatLayout, i.PercentChange),
+		Volume:         humanize.FormatFloat("", i.Volume/1_000_000),
+		Value:          humanize.FormatFloat("", i.Value/1_000_000),
+		QuerySymbol:    i.QuerySymbol,
+		MarketStatus:   i.MarketStatus,
+		MarketDateTime: i.MarketDateTime,
+		MarketName:     i.MarketName,
+		IndustryName:   i.IndustryName,
+		SectorName:     i.SectorName,
+		Level:          i.Level,
+	}
+}
+
+func prettyInvestorSummary(is investorSummary) pInvestorSummary {
+	var investors []pInvestor
+	for _, inv := range is.Investors {
+		investors = append(investors, pInvestor{
+			Type:             strings.ToUpper(inv.Type),
+			BuyValue:         humanize.FormatFloat("", inv.BuyValue),
+			SellValue:        humanize.FormatFloat("", inv.SellValue),
+			NetValue:         humanize.FormatFloat(floatLayout, inv.NetValue/1_000_000),
+			PercentBuyValue:  humanize.FormatFloat(floatLayout, inv.PercentBuyValue),
+			PercentSellValue: humanize.FormatFloat(floatLayout, inv.PercentSellValue),
+		})
+	}
+
+	return pInvestorSummary{
+		Name:       is.Name,
+		AsOfDate:   is.AsOfDate,
+		BeginDate:  is.BeginDate,
+		EndDate:    is.EndDate,
+		TotalValue: humanize.FormatFloat("", is.TotalValue),
+		Investors:  investors,
+	}
+}
+
+func prettyRankings(rr []ranking) []pRanking {
+	var rankings []pRanking
+	for _, r := range rr {
+		rankings = append(rankings, pRanking{
+			RankingType:    r.RankingType,
+			Market:         r.Market,
+			SecurityType:   r.SecurityType,
+			MarketDateTime: r.MarketDateTime,
+			RankingPeriod:  r.RankingPeriod,
+			Stocks:         prettyStocks(r.Stocks),
+		})
+	}
+
+	return rankings
+}
+
+func prettyStocks(ss []stock) []pStock {
+	var stocks []pStock
+	for _, s := range ss {
+		stocks = append(stocks, pStock{
+			Symbol:        s.Symbol,
+			Sign:          s.Sign,
+			Prior:         humanize.FormatFloat("", s.Prior),
+			Last:          humanize.FormatFloat("", s.Last),
+			Change:        humanize.FormatFloat(floatLayout, s.Change),
+			PercentChange: humanize.FormatFloat(floatLayout, s.PercentChange),
+			High:          humanize.FormatFloat("", s.High),
+			Low:           humanize.FormatFloat("", s.Low),
+			TotalVolume:   humanize.FormatFloat("", s.TotalVolume),
+			TotalValue:    humanize.FormatFloat("", s.TotalValue),
+			AomVolume:     humanize.FormatFloat("", s.AomVolume),
+			AomValue:      humanize.FormatFloat("", s.AomValue),
+			RankingValue:  humanize.FormatFloat("", s.RankingValue),
+		})
+	}
+
+	return stocks
+}
 
 var rankingTypes = []string{"mostActiveValue", "topGainer", "topLoser"}
 
