@@ -1,6 +1,6 @@
 //go:build unit
 
-package set
+package setbk
 
 import (
 	"reflect"

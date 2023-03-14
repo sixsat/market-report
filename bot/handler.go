@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sixsat/market-report/set"
+	"github.com/sixsat/market-report/setbk"
 )
 
 func messageHandler(ds *discordgo.Session, dm *discordgo.MessageCreate) {
@@ -42,7 +42,7 @@ func isBot(ds *discordgo.Session, dm *discordgo.MessageCreate) bool {
 
 func summaryMessage(market string) string {
 	var b strings.Builder
-	res := set.GetPrettySummary(market)
+	res := setbk.GetPrettySummary(market)
 
 	b.WriteString("```\n")
 
